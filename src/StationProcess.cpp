@@ -49,7 +49,7 @@ bool StationProcess::wait(char* buff)
 void StationProcess::read_file(char* buff)
 {
     char comparison_word[10] = "Frame";
-    char word[MAX];
+    char word[10];
     bzero(word, sizeof(word));
     sscanf(buff, "%s", word);
     
@@ -64,7 +64,7 @@ void StationProcess::read_file(char* buff)
 
         char temp[FRAME_SIZE];
         bzero(temp, sizeof(temp));
-        char word[MAX];
+        char word[10];
         bzero(word, sizeof(word));
         memcpy(word, REQUEST, sizeof(word));
         
@@ -95,12 +95,37 @@ void StationProcess::process_data(char* buff)
     int seq_num = frame.sequence_number;
     int src = frame.source_address;
     int dest = frame.destination_address;
+
+    if (seq_num < 0 || seq_num > 10) 
+	{
+		frame.sequence_number = 0;
+		seq_num = 0;
+	}
+
+	if (src < 0 || src > 10) 
+	{
+		frame.source_address = 0;
+		src = 0;
+	}
+
+	if (dest < 0 || dest > 10) 
+	{
+		frame.destination_address = 0;
+		dest = 0;
+	}
+
+    char word[10];
+    bzero(word, sizeof(word));
+	if (src < 0 || src > 10 ) 
+		memcpy(word, NULL, 0);
+	else 
+    	memcpy(word, frame.data, sizeof(frame.data));
     
     
     cout << "Receiving data frame (seq, src, dest, data): " << seq_num << ", " << src << ", " << dest << ", "
-         << frame.data << endl;
+         << word << endl;
     
-    char word[MAX];
+    char word[10];
     bzero(word, sizeof(word));
     memcpy(word, frame.data, sizeof(word));
     
@@ -130,7 +155,7 @@ void StationProcess::process_data(char* buff)
         fflush(write_station_log_file);
         
         // send out the data frame
-        char info[MAX];
+        char info[10];
         bzero(info, sizeof(info));
         memcpy(info, NEW, sizeof(info));
         char sent[FRAME_SIZE];
@@ -153,7 +178,7 @@ void StationProcess::process_data(char* buff)
         fflush(write_station_log_file);
         
         // we need to resend because CSP gave us a NEGATIVE reply
-        char info[MAX];
+        char info[10];
         bzero(info, sizeof(info));
         memcpy(info, REQUEST, sizeof(info));
         char sent[FRAME_SIZE];
