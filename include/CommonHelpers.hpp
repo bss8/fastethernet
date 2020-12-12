@@ -30,9 +30,9 @@
 #include <iostream>
 
 #define PORT 4410
-#define BACKLOG 10
-#define QUEUE_SIZE 25
-#define MAX 1024
+#define BACKLOG 5
+#define QUEUE_SIZE 10
+#define MAX 1000
 #define RECVFRAME 30
 
 using namespace std;
