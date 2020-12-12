@@ -198,14 +198,20 @@ void CommSwitchProcess::init()
     if(this->write_csp_log_file == NULL) 
 		err_sys("open file", -3);
 	
-	// UCOMMENT BELOW FOR DEBUGGING
-	// If using a different compiler, may need to verify struct variables are initialized 
 
-	// for(int i = 0; i < QUEUE_SIZE; i++) 
-	// {
-	// 	cout << CSP->data_queue[i].frame;
-	// 	cout << CSP->request_queue[i].key;
-	// }
+
+	for(int i = 0; i < QUEUE_SIZE; i++) 
+	{
+		data_queue[i].sequence_number = -1;
+		data_queue[i].source_address = -1;
+		data_queue[i].destination_address = -1;
+		strcpy(data_queue[i].data, " ");
+		
+		request_queue[i].sequence_number = -1;
+		request_queue[i].source_address = -1;
+		request_queue[i].destination_address = -1;
+		strcpy(request_queue[i].data, " ");
+	}
 	
 	FD_ZERO(&allset);
 	FD_SET(sock_fd, &allset);
