@@ -126,28 +126,6 @@ Navigate there from the root level project directory using this command:
 For data files:    
 `cd ./resources/data`
 
-# Example Run:    
-Let us run the server on ZEUS (147.26.231.156) and the client on EROS (147.26.231.153). 
-1. Run Server (ZEUS): `./CSP &`
-2. Run Client:  `./SP 1 147.26.231.156 &`
-3. Observe output printed to console
-4. Kill processes (gracefully): `./kill_pids.sh`
-5. Navitgate to logs: `cd logs`
-6. View logs: `vi CSP_out.log` or `vi SP_out.log`
-
-The below screenshots show a complete run, with the server on ZEUS and client or EROS. There are 10 available stations. In this run, we only invoke Station 0 through Station 4 for a total of 5. 
-
-Entire run for make all, run CSP, and pid kill:     
-![Make, CSP run, Kill](./resources/images/)
-
-Entire run for SP:     
-![SP](./resources/images)
-
-Entire run for everything.     
-Left is ZEUS (server), right is EROS (client):    
-![](./resources/images)
-
-
 # References
 
 I am documenting sources and websites I referenced for this project. 
