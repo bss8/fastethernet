@@ -81,6 +81,9 @@ To terminate the CSP (single) and SP (multiple) processes, please use the
 `kill_pids.sh` helper script. It will terminate processes with SP in the name, so 
 ensure there are no other processes running. It is a graceful kill using kill -s SIGINT, not -9. The interrupt is caught in C++ and handled to 1) gracefully close the socket and 2) invoke the CSP object destructor.
 
+If running server and client on DIFFERENT machines, the script will need to be invoked on BOTH machines.     
+If running server and client on SAME machine, the script need only be invoked ONCE.     
+
 Kill CSP process:    
 ![CSP Kill Script](./resources/images/csp_pid_kill.jpg)
 

@@ -32,7 +32,7 @@ StationProcess::~StationProcess()
  */ 
 bool StationProcess::wait(char* buff)
 {
-    char s1[MAX], s2[MAX], s3[MAX], s4[MAX];
+    char s1[10], s2[10], s3[10], s4[10];
     sscanf(buff, "%s %s %s %d %s", s1, s2, s3, &frame_need, s4);
     
     // check if the frame was correctly received
@@ -57,7 +57,7 @@ void StationProcess::read_file(char* buff)
     if(strncasecmp(word, comparison_word, strlen(comparison_word)) == 0)
     {
         // Send out the frame
-        char s1[MAX], s2[MAX], s3[MAX], s4[MAX];
+        char s1[10], s2[10], s3[10], s4[10];
         int seq_num, dest;
         sscanf(buff, "%s %d %s %s %s %d", s1, &seq_num, s2, s3, s4, &dest);
         
