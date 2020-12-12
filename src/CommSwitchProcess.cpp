@@ -91,7 +91,7 @@ void CommSwitchProcess::process_frame(int client_socket_fd, char* buf)
     bzero(word, sizeof(word));
 memcpy(word, data.data, sizeof(data.data));
 
-    char word[10];
+    //char word[10];
     bzero(word, sizeof(word));
 	if (src < 0 || src > 10 ) 
 		memcpy(word, NULL, 0);
