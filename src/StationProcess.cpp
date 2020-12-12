@@ -125,9 +125,9 @@ void StationProcess::process_data(char* buff)
     cout << "Receiving data frame (seq, src, dest, data): " << seq_num << ", " << src << ", " << dest << ", "
          << word << endl;
     
-    char word[10];
-    bzero(word, sizeof(word));
-    memcpy(word, frame.data, sizeof(word));
+    // char word[10];
+    // bzero(word, sizeof(word));
+    // memcpy(word, frame.data, sizeof(word));
     
     if(strncasecmp(word, NEW, strlen(word)) == 0)
     {
