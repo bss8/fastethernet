@@ -32,7 +32,7 @@ StationProcess::~StationProcess()
  */ 
 bool StationProcess::wait(char* buff)
 {
-    char s1[10], s2[10], s3[10], s4[10];
+    char s1[MAX], s2[MAX], s3[MAX], s4[MAX];
     sscanf(buff, "%s %s %s %d %s", s1, s2, s3, &frame_need, s4);
     
     // check if the frame was correctly received
@@ -49,7 +49,7 @@ bool StationProcess::wait(char* buff)
 void StationProcess::read_file(char* buff)
 {
     char comparison_word[10] = "Frame";
-    char word[10];
+    char word[MAX];
     bzero(word, sizeof(word));
     sscanf(buff, "%s", word);
     
@@ -57,14 +57,14 @@ void StationProcess::read_file(char* buff)
     if(strncasecmp(word, comparison_word, strlen(comparison_word)) == 0)
     {
         // Send out the frame
-        char s1[10], s2[10], s3[10], s4[10];
+        char s1[MAX], s2[MAX], s3[MAX], s4[MAX];
         int seq_num, dest;
         sscanf(buff, "%s %d %s %s %s %d", s1, &seq_num, s2, s3, s4, &dest);
         
 
         char temp[FRAME_SIZE];
         bzero(temp, sizeof(temp));
-        char word[10];
+        char word[MAX];
         bzero(word, sizeof(word));
         memcpy(word, REQUEST, sizeof(word));
         
@@ -95,39 +95,14 @@ void StationProcess::process_data(char* buff)
     int seq_num = frame.sequence_number;
     int src = frame.source_address;
     int dest = frame.destination_address;
-
-    if (seq_num < 0 || seq_num > 10) 
-	{
-		frame.sequence_number = 0;
-		seq_num = 0;
-	}
-
-	if (src < 0 || src > 10) 
-	{
-		frame.source_address = 0;
-		src = 0;
-	}
-
-	if (dest < 0 || dest > 10) 
-	{
-		frame.destination_address = 0;
-		dest = 0;
-	}
-
-    char word[10];
-    bzero(word, sizeof(word));
-	if (src < 0 || src > 10 ) 
-		memcpy(word, NULL, 0);
-	else 
-    	memcpy(word, frame.data, sizeof(frame.data));
     
     
     cout << "Receiving data frame (seq, src, dest, data): " << seq_num << ", " << src << ", " << dest << ", "
-         << word << endl;
+         << frame.data << endl;
     
-    // char word[10];
-    // bzero(word, sizeof(word));
-    // memcpy(word, frame.data, sizeof(word));
+    char word[MAX];
+    bzero(word, sizeof(word));
+    memcpy(word, frame.data, sizeof(word));
     
     if(strncasecmp(word, NEW, strlen(word)) == 0)
     {
@@ -151,11 +126,11 @@ void StationProcess::process_data(char* buff)
     }
     else if(strncasecmp(word, POSITIVE, strlen(word)) == 0)
     {
-        fprintf(write_station_log_file, "Received approval from CSP to send data frame with sequence # %d to SP # %d\n", seq_num, dest);
+        fprintf(write_station_log_file, "Received approval from CSP to send data frame with sequence number %d to SP # %d\n", seq_num, dest);
         fflush(write_station_log_file);
         
         // send out the data frame
-        char info[10];
+        char info[MAX];
         bzero(info, sizeof(info));
         memcpy(info, NEW, sizeof(info));
         char sent[FRAME_SIZE];
@@ -169,16 +144,16 @@ void StationProcess::process_data(char* buff)
     }
     else if(strncasecmp(word, SEND, strlen(word)) == 0)
     {
-        fprintf(write_station_log_file, "Send data frame with sequence # %d to SP # %d\n", seq_num, dest);
+        fprintf(write_station_log_file, "Send data frame with sequence number %d to SP # %d\n", seq_num, dest);
         fflush(write_station_log_file);
     }
     else if(strncasecmp(word, NEGATIVE, strlen(word)) == 0)
     {
-        fprintf(write_station_log_file, "Receive refuse from CSP to send data frame with sequence # %d to SP # %d\n", seq_num, dest);
+        fprintf(write_station_log_file, "Receive refuse from CSP to send data frame with sequence number %d to SP # %d\n", seq_num, dest);
         fflush(write_station_log_file);
         
         // we need to resend because CSP gave us a NEGATIVE reply
-        char info[10];
+        char info[MAX];
         bzero(info, sizeof(info));
         memcpy(info, REQUEST, sizeof(info));
         char sent[FRAME_SIZE];

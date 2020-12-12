@@ -68,35 +68,10 @@ void CommSwitchProcess::process_frame(int client_socket_fd, char* buf)
     int seq_num = data.sequence_number;
     int src = data.source_address;
     int dest = data.destination_address;
-
-	if (seq_num < 0 || seq_num > 10) 
-	{
-		data.sequence_number = 0;
-		seq_num = 0;
-	}
-
-	if (src < 0 || src > 10) 
-	{
-		data.source_address = 0;
-		src = 0;
-	}
-
-	if (dest < 0 || dest > 10) 
-	{
-		data.destination_address = 0;
-		dest = 0;
-	}
 	
-	char word[10];
+    char word[MAX];
     bzero(word, sizeof(word));
-memcpy(word, data.data, sizeof(data.data));
-
-    //char word[10];
-    bzero(word, sizeof(word));
-	if (src < 0 || src > 10 ) 
-		memcpy(word, NULL, 0);
-	else 
-    	memcpy(word, data.data, sizeof(data.data));
+    memcpy(word, data.data, sizeof(data.data));
 
 	// if no data then done
     if(word[0] == '\0') 
@@ -108,7 +83,7 @@ memcpy(word, data.data, sizeof(data.data));
     {
         if(is_data_queue_full() && is_req_queue_full())
         {
-            char data[10];
+            char data[MAX];
             bzero(data, sizeof(data));
             memcpy(data, NEGATIVE, sizeof(data));
             char sent[FRAME_SIZE];
@@ -120,7 +95,7 @@ memcpy(word, data.data, sizeof(data.data));
         }
         else if(!is_data_queue_full()) 
         {
-            char data[10];
+            char data[MAX];
             bzero(data, sizeof(data));
             memcpy(data, POSITIVE, sizeof(data));
             char sent[FRAME_SIZE];
@@ -398,7 +373,7 @@ void CommSwitchProcess::process_data_queue()
 
 			char sent[FRAME_SIZE];
 			bzero(sent, sizeof(sent));
-			char word[10];
+			char word[MAX];
 			bzero(word, sizeof(word));
 			memcpy(word, NEW, sizeof(word));
 			save_buff(seq_num, src, dest, word, sent);
@@ -414,7 +389,7 @@ void CommSwitchProcess::process_data_queue()
 			
 			char data[FRAME_SIZE];
 			bzero(data, sizeof(data));
-			char info[10];
+			char info[MAX];
 			bzero(info, sizeof(info));
 			memcpy(info, SEND, sizeof(info));
 			save_buff(seq_num, src, dest, info, data);
@@ -473,7 +448,7 @@ void CommSwitchProcess::process_request_queue(int (&position)[QUEUE_SIZE], int* 
 						
 						char sent[FRAME_SIZE];
 						bzero(sent, sizeof(sent));
-						char word[10];
+						char word[MAX];
 						bzero(word, sizeof(word));
 						memcpy(word, POSITIVE, sizeof(word));
 						save_buff(seq_num, src, dest, word, sent);
