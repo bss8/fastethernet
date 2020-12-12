@@ -1,5 +1,11 @@
 #include "../include/StationProcess.hpp"
 
+/**
+ * @author Borislav Sabotinov
+ * Implementation for the StationProcess.hpp file
+ */ 
+
+
 StationProcess::StationProcess()
 {
     cout << "Creating SP object." << endl;
@@ -256,7 +262,12 @@ void StationProcess::process_station()
 }
 
 
-
+/**
+ * Main driver of the SP / Client
+ * We keep it short and readable. 
+ * Create an instance of StationProcess, initialize it, and process
+ * the data file, sending frames or waiting as described in the station files.
+ */ 
 int main(int argc, char* argv[])
 {
 	if(argc < 2 || argc > 3) 
@@ -288,9 +299,10 @@ int main(int argc, char* argv[])
     }
 
     cout << "Launching client for Station #" << SP->station << " connection to host: " << SP->server <<endl;
-		
+	
+    // if the file does not exist, we want to create it
 	// https://linux.die.net/man/3/fopen
-	SP->write_station_log_file = fopen("./logs/SP_out.log", "a+");
+	SP->write_station_log_file = fopen("./logs/SP_out.log", "w+");
     if(SP->write_station_log_file == NULL) 
         err_sys("Open file error\n", -3);
 	
@@ -304,6 +316,7 @@ int main(int argc, char* argv[])
 
     cout << "Data file path is: " << path << endl;
 	
+    // we want to read only
     SP->read_station_data_file = fopen(path, "r");
 	if(SP->read_station_data_file == NULL)
     {

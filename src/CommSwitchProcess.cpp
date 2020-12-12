@@ -164,7 +164,7 @@ void CommSwitchProcess::init()
 	for (int i = 0; i < FD_SETSIZE; i++)
 		this->client[i] = -1;
 	
-	this->write_csp_log_file = fopen("./logs/CSP_out.log", "a+");
+	this->write_csp_log_file = fopen("./logs/CSP_out.log", "w+");
     if(this->write_csp_log_file == NULL) 
 		err_sys("open file", -3);
 	
