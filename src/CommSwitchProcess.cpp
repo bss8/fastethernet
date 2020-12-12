@@ -69,32 +69,34 @@ void CommSwitchProcess::process_frame(int client_socket_fd, char* buf)
     int src = data.source_address;
     int dest = data.destination_address;
 
-	if (seq_num < 0 || seq_num > 10) 
-	{
-		data.sequence_number = 0;
-		seq_num = 0;
-	}
+	// if (seq_num < 0 || seq_num > 10) 
+	// {
+	// 	data.sequence_number = 0;
+	// 	seq_num = 0;
+	// }
 
-	if (src < 0 || src > 10) 
-	{
-		data.source_address = 0;
-		src = 0;
-	}
+	// if (src < 0 || src > 10) 
+	// {
+	// 	data.source_address = 0;
+	// 	src = 0;
+	// }
 
-	if (dest < 0 || dest > 10) 
-	{
-		data.destination_address = 0;
-		dest = 0;
-	}
-
-
-
-    char word[10];
+	// if (dest < 0 || dest > 10) 
+	// {
+	// 	data.destination_address = 0;
+	// 	dest = 0;
+	// }
+	
+	char word[10];
     bzero(word, sizeof(word));
-	if (src < 0 || src > 10 ) 
-		memcpy(word, NULL, 0);
-	else 
-    	memcpy(word, data.data, sizeof(data.data));
+	memcpy(word, data.data, sizeof(data.data));
+
+    // char word[10];
+    // bzero(word, sizeof(word));
+	// if (src < 0 || src > 10 ) 
+	// 	memcpy(word, NULL, 0);
+	// else 
+    // 	memcpy(word, data.data, sizeof(data.data));
 
 	// if no data then done
     if(word[0] == '\0') 
