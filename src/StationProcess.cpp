@@ -278,9 +278,14 @@ int main(int argc, char* argv[])
 	SP->station = atoi(argv[1]);
     
     if (argc == 3)
+    {
         SP->server = argv[2];
-    else 
+    }
+    else
+    { 
         SP->server = ZEUS_IP;  
+        cout << "Using ZEUS_IP for connecting to the server....." << endl;
+    }
 
     cout << "Launching client for Station #" << SP->station << " connection to host: " << SP->server <<endl;
 		
@@ -289,13 +294,15 @@ int main(int argc, char* argv[])
     if(SP->write_station_log_file == NULL) 
         err_sys("Open file error\n", -3);
 	
-	// read data frame from the input file
-	char s1[10] = "S";
-	char s2[10] = ".txt";
+	// read data frames and waits from the input files
+    // since we have 10 stations, files are S0 thru S9 with a .txt extension
+	char s1[2] = "S";
+	char s2[5] = ".txt";
 	char *path = (char*)malloc(strlen(s1) + strlen(s2) + 1);
+
 	sprintf(path, "./resources/data/%s%d%s", s1, SP->station, s2);
 
-    cout << "Path = " << path << endl;
+    cout << "Data file path is: " << path << endl;
 	
     SP->read_station_data_file = fopen(path, "r");
 	if(SP->read_station_data_file == NULL)
@@ -303,6 +310,7 @@ int main(int argc, char* argv[])
         err_sys("Error opening SP file!", -3);
     }
 	
+    // wrap in try to catch interrupt and gracefully exit
     try 
     {
         SP->init();
@@ -314,6 +322,9 @@ int main(int argc, char* argv[])
 		print_art();
 	}
 
+    // We may not reach this if SIGINT interrupt is provided on cmdline 
+	// but need to close socket and file in case we do
+	// No more receptions or transmissions.  
 	close(SP->client_fd);
 	fclose(SP->read_station_data_file);
 	fclose(SP->write_station_log_file);

@@ -3,7 +3,7 @@ Author: Borislav S. Sabotinov (bss64)
 CS5310 Network
 
 View in a browser for best results so markdown and HTML may be parsed. 
-Code and README on GitHub: 
+Code and README on GitHub: https://github.com/bss8/fastethernet 
 
 ## Overview 
 
@@ -94,3 +94,4 @@ I also want to refer back to these for future studies and refreshers.
 10. https://stackoverflow.com/questions/388242/the-definitive-c-book-guide-and-list 
 11. https://stackoverflow.com/questions/24331687/is-it-possible-to-print-the-awk-output-in-the-same-line
 12. https://stackoverflow.com/questions/19366503/in-c-when-interrupted-with-ctrl-c-call-a-function-with-arguments-other-than-s
+13. https://github.com/lattera/glibc/blob/master/resolv/netdb.h 

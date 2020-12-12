@@ -1,4 +1,6 @@
 Frame 1, to station 1
-Frame 8, to station 4
+Frame 7, to station 8
 Frame 5, to station 5
-Frame 16, to station 7
+Frame 15, to station 7
+Wait for receiving 2 frames
+Frame 2, to station 6

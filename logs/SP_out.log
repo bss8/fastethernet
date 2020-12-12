@@ -546,3 +546,36 @@ Received approval from CSP to send data frame with sequence number 1 to SP # 3
 Received data frame from SP 0
 Received approval from CSP to send data frame with sequence number 4 to SP # 5
 Received data frame from SP 0
+Send a request to CSP to send data frame with sequence number 1 to SP # 3
+Send a request to CSP to send data frame with sequence number 2 to SP # 2
+Send a request to CSP to send data frame with sequence number 4 to SP # 5
+Received approval from CSP to send data frame with sequence number 1 to SP # 3
+Received data frame from SP 0
+Send a request to CSP to send data frame with sequence number 3 to SP # 3
+Send a request to CSP to send data frame with sequence number 4 to SP # 6
+Received approval from CSP to send data frame with sequence number 3 to SP # 3
+Received data frame from SP 0
+Send a request to CSP to send data frame with sequence number 1 to SP # 3
+Send a request to CSP to send data frame with sequence number 2 to SP # 4
+Send a request to CSP to send data frame with sequence number 1 to SP # 7
+Received approval from CSP to send data frame with sequence number 1 to SP # 3
+Received data frame from SP 0
+Received approval from CSP to send data frame with sequence number 1 to SP # 7
+Received data frame from SP 0
+Send a request to CSP to send data frame with sequence number 1 to SP # 3
+Send a request to CSP to send data frame with sequence number 4 to SP # 6
+Received approval from CSP to send data frame with sequence number 1 to SP # 3
+Received data frame from SP 0
+Send a request to CSP to send data frame with sequence number 1 to SP # 1
+Send a request to CSP to send data frame with sequence number 4 to SP # 6
+Received approval from CSP to send data frame with sequence number 1 to SP # 1
+Send a request to CSP to send data frame with sequence number 1 to SP # 7
+Received data frame from SP 0
+Send a request to CSP to send data frame with sequence number 2 to SP # 4
+Received data frame from SP 0
+Received data frame from SP 0
+Send a request to CSP to send data frame with sequence number 1 to SP # 3
+Send a request to CSP to send data frame with sequence number 2 to SP # 2
+Received approval from CSP to send data frame with sequence number 1 to SP # 3
+Send a request to CSP to send data frame with sequence number 4 to SP # 5
+Received data frame from SP 0

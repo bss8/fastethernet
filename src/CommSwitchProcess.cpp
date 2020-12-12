@@ -1,6 +1,9 @@
 #include "../include/CommSwitchProcess.hpp"
 
-
+/**
+ * @author Borislav Sabotinov
+ * Implementation for the CommSwitchProcess.hpp file
+ */ 
 
 CommSwitchProcess::CommSwitchProcess()
 {
@@ -10,26 +13,28 @@ CommSwitchProcess::CommSwitchProcess()
 CommSwitchProcess::~CommSwitchProcess() 
 {
 	cout << "Deleting CSP object." << endl;
+	// No more receptions or transmissions.
 	shutdown(sock_fd, SHUT_RDWR);
 	close(sock_fd);
 	fclose(this->write_csp_log_file);
 }
 
-bool CommSwitchProcess::is_dataQueue_full() // checke if the data queue is full or not
+bool CommSwitchProcess::is_data_queue_full() 
 {
     for(int i = 0; i < QUEUE_SIZE; i++)
     {
-        if(dataQueue[i].sequence_number == -1)
+        if(data_queue[i].sequence_number == -1)
             return false;
     }
+	// after we check everything, then queue must be full
     return true;
 }
 
-bool CommSwitchProcess::is_reqQueue_full() // check if the request queue is full or not
+bool CommSwitchProcess::is_req_queue_full() 
 {
     for(int i = 0; i < QUEUE_SIZE; i++)
     {
-        if(requestQueue[i].sequence_number == -1)
+        if(request_queue[i].sequence_number == -1)
             return false;
     }
     return true;
@@ -57,7 +62,7 @@ void CommSwitchProcess::process_frame(int client_socket_fd, char* buf)
 
     if(strncasecmp(word, REQUEST, strlen(word)) == 0) // get requests from SP
     {
-        if(is_dataQueue_full() && is_reqQueue_full())
+        if(is_data_queue_full() && is_req_queue_full())
         {
             char data[MAX];
             bzero(data, sizeof(data));
@@ -69,7 +74,7 @@ void CommSwitchProcess::process_frame(int client_socket_fd, char* buf)
             if(write(client_socket_fd, sent, sizeof(sent)) < 0)
                 err_sys("Write error", -1);
         }
-        else if(!is_dataQueue_full()) // check dataQueue
+        else if(!is_data_queue_full()) 
         {
             char data[MAX];
             bzero(data, sizeof(data));
@@ -87,14 +92,14 @@ void CommSwitchProcess::process_frame(int client_socket_fd, char* buf)
             fflush(write_csp_log_file);
 
         }
-        else if(!is_reqQueue_full()) // check request_queue
+        else if(!is_req_queue_full()) // check request_queue
         {
             // take the request into queue
             for(int i = 0; i < QUEUE_SIZE; i++)
             {
-                if(requestQueue[i].sequence_number == -1)
+                if(request_queue[i].sequence_number == -1)
                 {
-                    requestQueue[i] = data;
+                    request_queue[i] = data;
                     break;
                 }
             }
@@ -102,15 +107,13 @@ void CommSwitchProcess::process_frame(int client_socket_fd, char* buf)
     }
     else if(strncasecmp(word, NEW, strlen(word)) == 0)
     {
-        // data frame from SP
-        // printf("Save the frame to dataQueue\n");
 		cout << "Saving frame in data queue....." << endl;
 
         for(int i = 0; i < QUEUE_SIZE; i++)
         {
-            if(dataQueue[i].sequence_number == -1)
+            if(data_queue[i].sequence_number == -1)
             {
-                dataQueue[i] = data;
+                data_queue[i] = data;
                 break;
             }
         }
@@ -170,8 +173,8 @@ void CommSwitchProcess::init()
 
 	// for(int i = 0; i < QUEUE_SIZE; i++) 
 	// {
-	// 	cout << CSP->dataQueue[i].frame;
-	// 	cout << CSP->requestQueue[i].key;
+	// 	cout << CSP->data_queue[i].frame;
+	// 	cout << CSP->request_queue[i].key;
 	// }
 	
 	FD_ZERO(&allset);
@@ -186,7 +189,7 @@ void CommSwitchProcess::process_connections()
     sigIntHandler.sa_flags = 0;
     sigaction(SIGINT, &sigIntHandler, NULL);
 
-	//wrap in try to catch interrupt and gracefully exit
+	// wrap in try to catch interrupt and gracefully exit
 	try {
 		while(true)
 		{
@@ -242,47 +245,12 @@ void CommSwitchProcess::process_connections()
 			
 			process_data_queue();
 			
-			// record the empty position in the dataQueue
+			// record the empty position in the data_queue
 			int pos[QUEUE_SIZE];
 			int j = 0;
-			for(int i = 0; i < QUEUE_SIZE; i++)
-			{
-				if(this->dataQueue[i].sequence_number == -1)
-					pos[j++] = i;
-			}
+			record_empty_pos_in_data_q(pos, &j);
 			
-			int k = 0;
-			for(int i = 0; i < QUEUE_SIZE; i++)
-			{
-				if(this->requestQueue[i].sequence_number != -1)
-				{
-					if(k < j)
-					{
-						
-						this->dataQueue[pos[k]] = this->requestQueue[i];
-						k++;
-						
-						// sending feedback to src, src will send frame to CSP
-						int seq_num = this->requestQueue[i].sequence_number;
-						int src = this->requestQueue[i].source_address;
-						int dest = this->requestQueue[i].destination_address;
-						
-						char sent[FRAME_SIZE];
-						bzero(sent, sizeof(sent));
-						char word[MAX];
-						bzero(word, sizeof(word));
-						memcpy(word, POSITIVE, sizeof(word));
-						save_buff(seq_num, src, dest, word, sent);
-						
-						write(this->client[src - 1], sent, sizeof(sent));
-						
-						fprintf(this->write_csp_log_file, "Send approval to SP %d \n", src);
-						fflush(this->write_csp_log_file);
-						
-						this->requestQueue[i].sequence_number = -1;
-					}	
-				}
-			}
+			process_request_queue(pos, &j);
 
 		} // end while
 	} // end try
@@ -293,6 +261,8 @@ void CommSwitchProcess::process_connections()
 		print_art();
 	}
 
+	// We may not reach this if SIGINT interrupt is provided on cmdline 
+	// but need to close socket and file in case we do
 	// No more receptions or transmissions.  
 	shutdown(sock_fd, SHUT_RDWR);
 	close(sock_fd);
@@ -301,53 +271,59 @@ void CommSwitchProcess::process_connections()
 
 void CommSwitchProcess::process_other_file_descriptors()
 {
-	for (int i = 0; i <= max_i; i++) // read data from different fd
-		{	
-			char buf[MAX];
-			int client_socket_fd; 
+	for (int i = 0; i <= max_i; i++) 
+	{	
+		char buf[MAX];
+		int client_socket_fd; 
+
+		bzero(buf, sizeof(buf));
+
+		if ((client_socket_fd = this->client[i]) < 0)
+		{
+			continue;
+		}
+
+		if (FD_ISSET(client_socket_fd, &rset)) 
+		{
+			cout << "client socket file descriptor = " << client_socket_fd << endl;
 
 			bzero(buf, sizeof(buf));
-			if ((client_socket_fd = this->client[i]) < 0)
-				continue;
-			if (FD_ISSET(client_socket_fd, &rset)) 
+			if((n = read(client_socket_fd, buf, sizeof(buf) - 1)) == 0) 
 			{
-				cout << "client socket file descriptor = " << client_socket_fd << endl;
+				// close client
+				close(client_socket_fd);
+				FD_CLR(client_socket_fd, &allset);
+				this->client[i] = -1;
 
-				bzero(buf, sizeof(buf));
-				if((n = read(client_socket_fd, buf, sizeof(buf) - 1)) == 0) 
-				{
-					// close client
-					close(client_socket_fd);
-					FD_CLR(client_socket_fd, &allset);
-					this->client[i] = -1;
+				cout << "READ ERROR while processing fd!" << endl;
+			} 
+			else
+			{
+				cout << "Server received ssize_t: " << n << endl;
 
-					cout << "READ ERROR while processing fd!" << endl;
-				} 
-				else
-				{
-					cout << "Server received ssize_t: " << n << endl;
-
-					this->partition_buffer(buf, n, client_socket_fd);
-				}			
-			}
+				this->partition_buffer(buf, n, client_socket_fd);
+			}			
 		}
+	}
 }
 
 void CommSwitchProcess::process_data_queue()
 {
 	for(int i = 0; i < QUEUE_SIZE; i++) 
 	{
-		if(this->dataQueue[i].sequence_number != -1)
+		if(this->data_queue[i].sequence_number != -1)
 		{
-			int seq_num = this->dataQueue[i].sequence_number;
-			int src = this->dataQueue[i].source_address;
-			int dest = this->dataQueue[i].destination_address;
+			int seq_num = this->data_queue[i].sequence_number;
+			int src = this->data_queue[i].source_address;
+			int dest = this->data_queue[i].destination_address;
 			int fd = this->client[dest - 1];
 			
 			// if fd does not exist, keep going
 			if(fd <= 0) 
+			{
 				continue;
-			
+			}
+
 			char sent[FRAME_SIZE];
 			bzero(sent, sizeof(sent));
 			char word[MAX];
@@ -359,7 +335,7 @@ void CommSwitchProcess::process_data_queue()
 				 << word << endl;
 
 			write(fd, sent, sizeof(sent));
-			this->dataQueue[i].sequence_number = -1;
+			this->data_queue[i].sequence_number = -1;
 			
 			fprintf(this->write_csp_log_file, "Forward the data frame from SP%d to SP%d \n", src, dest);
 			fflush(this->write_csp_log_file);
@@ -381,15 +357,56 @@ void CommSwitchProcess::process_data_queue()
 
 void CommSwitchProcess::record_empty_pos_in_data_q(int (&position)[QUEUE_SIZE], int* j)
 {
-
+	for(int i = 0; i < QUEUE_SIZE; i++)
+	{
+		// use (*j) to increment the vaue pointed at, not the pointer
+		if(this->data_queue[i].sequence_number == -1)
+			position[(*j)++] = i;
+	}
 }
 
 void CommSwitchProcess::process_request_queue(int (&position)[QUEUE_SIZE], int* j)
 {
-
+	int k = 0;
+			for(int i = 0; i < QUEUE_SIZE; i++)
+			{
+				if(this->request_queue[i].sequence_number != -1)
+				{
+					if(k < (*j))
+					{
+						
+						this->data_queue[position[k]] = this->request_queue[i];
+						k++;
+						
+						// sending feedback to src, src will send frame to CSP
+						int seq_num = this->request_queue[i].sequence_number;
+						int src = this->request_queue[i].source_address;
+						int dest = this->request_queue[i].destination_address;
+						
+						char sent[FRAME_SIZE];
+						bzero(sent, sizeof(sent));
+						char word[MAX];
+						bzero(word, sizeof(word));
+						memcpy(word, POSITIVE, sizeof(word));
+						save_buff(seq_num, src, dest, word, sent);
+						
+						write(this->client[src - 1], sent, sizeof(sent));
+						
+						fprintf(this->write_csp_log_file, "Send approval to SP %d \n", src);
+						fflush(this->write_csp_log_file);
+						
+						this->request_queue[i].sequence_number = -1;
+					}	
+				}
+			}
 }
 
-
+/**
+ * Main driver of the CSP / Server
+ * We keep it short and readable. 
+ * Create an instance of CommSwitchProcess, initialize it, and process connections 
+ * as they come
+ */ 
 int main(int argc, char* argv[])
 {
 	if(argc != 1)
@@ -403,7 +420,6 @@ int main(int argc, char* argv[])
 	CommSwitchProcess* CSP = new CommSwitchProcess();
 	CSP->init();
 	CSP->process_connections();
-	
     
     return EXIT_SUCCESS;
 }

@@ -1,5 +1,9 @@
 #include "CommonHelpers.hpp"
 
+/**
+ * @author Borislav Sabotinov
+ * Class defining a station process and the attributes and behavior a station needs
+ */ 
 class StationProcess 
 {
     public:
@@ -9,10 +13,10 @@ class StationProcess
         int port_num;
         int station_num;
 
-        int recvFrames[RECVFRAME];
+        int recvFrames[RECVFRAME];  // 30
         bool if_wait;
         int frame_need;
-        int read_return_value; // return value of read
+        int read_return_value; 
 
         int station;
         const char* server;

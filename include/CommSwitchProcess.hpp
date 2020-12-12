@@ -1,18 +1,22 @@
 #include "CommonHelpers.hpp"
 
+/**
+ * @author Borislav Sabotinov
+ * Class definition for the communication switch process, which acts as our server. 
+ */ 
 class CommSwitchProcess
 {
     public:
         FILE* write_csp_log_file;
         int client[FD_SETSIZE];
-        struct Frame dataQueue[QUEUE_SIZE];       
-        struct Frame requestQueue[QUEUE_SIZE];    
+        struct Frame data_queue[QUEUE_SIZE];       
+        struct Frame request_queue[QUEUE_SIZE];    
 
         CommSwitchProcess();
         ~CommSwitchProcess();
 
-        bool is_dataQueue_full();
-        bool is_reqQueue_full();
+        bool is_data_queue_full();
+        bool is_req_queue_full();
         void process_frame(int socket_fd, char* buf);
         void partition_buffer(char* buf, int len, int socket_fd);
 
