@@ -2,7 +2,7 @@
 Author: Borislav S. Sabotinov (bss64)
 CS5310 Network
 
-View in a browser for best results so markdown and HTML may be parsed. 
+View in a browser for best results so markdown and HTML may be parsed.     
 Code and README on GitHub: https://github.com/bss8/fastethernet 
 
 ## Overview 
@@ -50,18 +50,24 @@ https://smartbear.com/blog/develop/the-biggest-changes-in-c11-and-why-you-should
 From the project root level directory, run this command:    
 `make all`
 
+The `Makefile` contains logic for building this project via the g++ compiler; it uses 
+options `-g` and `-std=c++11`. For more details please refer to the `Makefile` directly. 
+
+Output of the make all command:     
 ![make all cmd](./resources/images/make_all.jpg "Output of make all cmd")
 
 ## Run Server
 On **ZEUS** - From the project root level directory, run this command:     
 `./CSP &`
 
+Starting CSP:    
 ![run CSP](./resources/images/csp_start.jpg)
 
 ## Run Client
 On **EROS** - From the project root level directory, run this command:     
 `./SP <STATION_NUM> <HOST_IP> &`
 
+Starting SP:     
 ![run SP](./resources/images/sp_start.jpg)
 
 ## <span style="color:red">**Terminate Processes (Important!)**</span>
@@ -75,23 +81,29 @@ To terminate the CSP (single) and SP (multiple) processes, please use the
 `kill_pids.sh` helper script. It will terminate processes with SP in the name, so 
 ensure there are no other processes running. It is a graceful kill using kill -s SIGINT, not -9. The interrupt is caught in C++ and handled to 1) gracefully close the socket and 2) invoke the CSP object destructor.
 
+Kill CSP process:    
 ![CSP Kill Script](./resources/images/csp_pid_kill.jpg)
 
+Kill SP process:    
 ![SP Kill Script](./resources/images/sp_pid_kill.jpg)
 
+Both CSP and SP terminations together:     
 ![Both Kill Script](./resources/images/csp_sp_pid_kill_all.jpg)
 
 Manual Method: 
 
 Alternatively, one may manually terminate these processes:     
-1. ps -ef | grep SP
+1. `ps -ef | grep SP`
 2. Should see 1 or more PIDs for CSP and SP
-3. kill -s SIGINT \<PID> where PID is the process ID you wish to terminate
+3. `kill -s SIGINT \<PID>`    
+ where PID is the process ID you wish to terminate
 
 It is strongly recommended to kill SP processes FIRST, then terminate CSP. 
 
+Manual kill, focus on SP:    
 ![Manual Process Kill](./resources/images/manual_pid_kill.jpg)
 
+Manual kill, shows both CSP and SP:    
 ![Manual pid kill all](./resources/images/manual_pid_kill_all.jpg)
 
 ## Simulation Output / Logs
@@ -99,9 +111,19 @@ It is strongly recommended to kill SP processes FIRST, then terminate CSP.
 Logs will be available under the `logs` directory, located in the project root level directory. 
 There will be `CSP_out.log` and `SP_out.log` files for a full run. 
 
+How to view output logs for CSP and SP:     
 ![View Logs](./resources/images/view_logs.jpg "View Logs")
 
-## Example Run:    
+## Raw Image and Data Files
+
+Raw image files / screenshots may be found under resources/images.    
+Navigate there from the root level project directory using this command:    
+`cd ./resources/images`
+
+For data files:    
+`cd ./resources/data`
+
+# Example Run:    
 Let us run the server on ZEUS (147.26.231.156) and the client on EROS (147.26.231.153). 
 1. Run Server (ZEUS): `./CSP &`
 2. Run Client:  `./SP 1 147.26.231.156 &`
@@ -109,6 +131,18 @@ Let us run the server on ZEUS (147.26.231.156) and the client on EROS (147.26.23
 4. Kill processes (gracefully): `./kill_pids.sh`
 5. Navitgate to logs: `cd logs`
 6. View logs: `vi CSP_out.log` or `vi SP_out.log`
+
+The below screenshots show a complete run, with the server on ZEUS and client or EROS. There are 10 available stations. In this run, we only invoke Station 0 through Station 4 for a total of 5. 
+
+Entire run for make all, run CSP, and pid kill:     
+![Make, CSP run, Kill](./resources/images/)
+
+Entire run for SP:     
+![SP](./resources/images)
+
+Entire run for everything.     
+Left is ZEUS (server), right is EROS (client):    
+![](./resources/images)
 
 
 # References

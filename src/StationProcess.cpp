@@ -5,7 +5,9 @@
  * Implementation for the StationProcess.hpp file
  */ 
 
-
+/**
+ * Constructor for our SP object, where we intialize some variables
+ */ 
 StationProcess::StationProcess()
 {
     cout << "Creating SP object." << endl;
@@ -13,6 +15,10 @@ StationProcess::StationProcess()
     this->recvFrames[RECVFRAME] = { -1 };
 }
 
+
+/**
+ * Destructor for SP, where we close the socket and the log file
+ */ 
 StationProcess::~StationProcess()
 {
     cout << "Deleting SP object." << endl;
@@ -21,7 +27,9 @@ StationProcess::~StationProcess()
 	fclose(this->write_station_log_file);
 }
 
-// if wait is required, we pause reading data from the SP data file
+/**
+ * if wait is required, we pause reading data from the SP data file
+ */ 
 bool StationProcess::wait(char* buff)
 {
     char s1[MAX], s2[MAX], s3[MAX], s4[MAX];
@@ -35,7 +43,9 @@ bool StationProcess::wait(char* buff)
     return true;
 }
 
-// process the SP file by reading the frames from it
+/**
+ * process the SP file by reading the frames from it
+ */ 
 void StationProcess::read_file(char* buff)
 {
     char comparison_word[10] = "Frame";
@@ -65,7 +75,7 @@ void StationProcess::read_file(char* buff)
             err_sys("Write error", -1);
             
     
-        fprintf(write_station_log_file, "Send a request to CSP to send data frame with sequence number %d to SP # %d\n", seq_num, dest);
+        fprintf(write_station_log_file, "Send a request to CSP to send data frame with sequence # %d to SP # %d\n", seq_num, dest);
         fflush(write_station_log_file);
     }
     else
@@ -74,7 +84,9 @@ void StationProcess::read_file(char* buff)
     }
 }
 
-// SP uses this function to respond to CSP according to different situations
+/** 
+ * SP uses this function to respond to CSP according to different situations
+ */ 
 void StationProcess::process_data(char* buff)
 {
     struct Frame frame;
@@ -114,7 +126,7 @@ void StationProcess::process_data(char* buff)
     }
     else if(strncasecmp(word, POSITIVE, strlen(word)) == 0)
     {
-        fprintf(write_station_log_file, "Received approval from CSP to send data frame with sequence number %d to SP # %d\n", seq_num, dest);
+        fprintf(write_station_log_file, "Received approval from CSP to send data frame with sequence # %d to SP # %d\n", seq_num, dest);
         fflush(write_station_log_file);
         
         // send out the data frame
@@ -132,15 +144,15 @@ void StationProcess::process_data(char* buff)
     }
     else if(strncasecmp(word, SEND, strlen(word)) == 0)
     {
-        fprintf(write_station_log_file, "Send data frame with sequence number %d to SP # %d\n", seq_num, dest);
+        fprintf(write_station_log_file, "Send data frame with sequence # %d to SP # %d\n", seq_num, dest);
         fflush(write_station_log_file);
     }
     else if(strncasecmp(word, NEGATIVE, strlen(word)) == 0)
     {
-        fprintf(write_station_log_file, "Receive refuse from CSP to send data frame with sequence number %d to SP # %d\n", seq_num, dest);
+        fprintf(write_station_log_file, "Receive refuse from CSP to send data frame with sequence # %d to SP # %d\n", seq_num, dest);
         fflush(write_station_log_file);
         
-        // resend
+        // we need to resend because CSP gave us a NEGATIVE reply
         char info[MAX];
         bzero(info, sizeof(info));
         memcpy(info, REQUEST, sizeof(info));
@@ -151,7 +163,7 @@ void StationProcess::process_data(char* buff)
         if(write(client_fd, sent, sizeof(sent)) < 0)
             err_sys("Write error", -1);
     
-        fprintf(write_station_log_file, "Resend request to CSP to send data frame with sequence number %d to SP # %d\n", seq_num, dest);
+        fprintf(write_station_log_file, "Resend the request to CSP to send data frame with sequence # %d to SP # %d\n", seq_num, dest);
     }
     fflush(write_station_log_file);
 }
@@ -177,6 +189,9 @@ void StationProcess::partition_buffer(char* buff, int len)
     }
 }
 
+/**
+ * We perform initialization by creating a socket and open a connection on it
+ */ 
 void StationProcess::init()
 {
     this->if_wait = false;
@@ -206,11 +221,20 @@ void StationProcess::init()
         cout << "Client connected successfully!" << endl;	
     }
 
+    // process clients as they come
     process_station();
 }
 
+/**
+ * we process station logic such as sending requests to the switch
+ * and processing the data files which contain our data 
+ * driving the execution of this program (sending frames or waiting to receve them)
+ */ 
 void StationProcess::process_station()
 {
+    // we loop continuously; since the outer function init() which calls this
+    // is wrapped up in a try/catch, we will catch the SIGINT 
+    // interrupt the exit gracefully
     while(true)
     {
         bzero(buf, sizeof(buf));
@@ -267,6 +291,9 @@ void StationProcess::process_station()
  * We keep it short and readable. 
  * Create an instance of StationProcess, initialize it, and process
  * the data file, sending frames or waiting as described in the station files.
+ * Standard arguments: 
+ * @arg int argc to count how many arguments are provided by user on launch
+ * @arg char* argv[] array to hold the arguments passed via cmdline
  */ 
 int main(int argc, char* argv[])
 {
@@ -286,10 +313,12 @@ int main(int argc, char* argv[])
 
     StationProcess* SP = new StationProcess();
 	
+    // second argument is the station number, so 1 is S1.txt
 	SP->station = atoi(argv[1]);
     
     if (argc == 3)
     {
+        // server/host is our 3rd (optional) argument
         SP->server = argv[2];
     }
     else
@@ -332,6 +361,7 @@ int main(int argc, char* argv[])
 	{
 		cerr << "Interrupt SIGINT exception caught - will destroy SP object. \n Goodbye! :)" << endl;
 		// destructor for CSP object is automatically invoked
+
 		print_art();
 	}
 
@@ -342,5 +372,5 @@ int main(int argc, char* argv[])
 	fclose(SP->read_station_data_file);
 	fclose(SP->write_station_log_file);
     
-    return EXIT_SUCCESS;
+    return EXIT_SUCCESS; //0
 }

@@ -5,11 +5,17 @@
  * Implementation for the CommSwitchProcess.hpp file
  */ 
 
+/**
+ * Constructor for our CSP object
+ */ 
 CommSwitchProcess::CommSwitchProcess()
 {
 	cout << "Creating CSP object." << endl;
 }
 
+/**
+ * Destructor for CSP, where we close the socket and the log file
+ */ 
 CommSwitchProcess::~CommSwitchProcess() 
 {
 	cout << "Deleting CSP object." << endl;
@@ -19,6 +25,10 @@ CommSwitchProcess::~CommSwitchProcess()
 	fclose(this->write_csp_log_file);
 }
 
+/**
+ * We check if our data queue is full or not
+ * @return true if full false otherwise 
+ */ 
 bool CommSwitchProcess::is_data_queue_full() 
 {
     for(int i = 0; i < QUEUE_SIZE; i++)
@@ -30,6 +40,10 @@ bool CommSwitchProcess::is_data_queue_full()
     return true;
 }
 
+/**
+ * We check if our request queue is full or not
+ * @return true if full false otherwise
+ */ 
 bool CommSwitchProcess::is_req_queue_full() 
 {
     for(int i = 0; i < QUEUE_SIZE; i++)
@@ -41,7 +55,12 @@ bool CommSwitchProcess::is_req_queue_full()
 }
 
 
-// process frames from SP
+/**
+ * process frames from SP
+ * Takes in 2 arguments as described below: 
+ * @arg int client socket file descriptor
+ * @arg character array for the buffer
+ */ 
 void CommSwitchProcess::process_frame(int client_socket_fd, char* buf)
 {
     struct Frame data;
@@ -83,7 +102,6 @@ void CommSwitchProcess::process_frame(int client_socket_fd, char* buf)
             bzero(sent, sizeof(sent));
             save_buff(seq_num, src, dest, data, sent);
 
-            // printf("Send data : %d %d %d %s\n", seq_num, src, dest, info);
             if(write(client_socket_fd, sent, sizeof(sent)) < 0)
                 err_sys("Write error", -1);
 			cout << "Send data (seq, src, dest, data): " << seq_num << ", " << src << ", " << dest << ", " << data << endl;
@@ -92,9 +110,10 @@ void CommSwitchProcess::process_frame(int client_socket_fd, char* buf)
             fflush(write_csp_log_file);
 
         }
-        else if(!is_req_queue_full()) // check request_queue
+        else if(!is_req_queue_full()) 
         {
-            // take the request into queue
+            // add the request into the queue since it is not full
+			// and we have room to store it
             for(int i = 0; i < QUEUE_SIZE; i++)
             {
                 if(request_queue[i].sequence_number == -1)
@@ -123,7 +142,13 @@ void CommSwitchProcess::process_frame(int client_socket_fd, char* buf)
     }
 }
 
-// partition the buffer to solve the TCP sticky packet problem
+/**
+ * partition the buffer to solve the TCP sticky packet problem
+ * Takes in 3 arguments as described below: 
+ * @arg character array for the buffer
+ * @arg integer for the length
+ * @arg integer client socket file descriptor
+ */ 
 void CommSwitchProcess::partition_buffer(char* buf, int len, int client_socket_fd)
 {
     int k = 0;
@@ -137,6 +162,11 @@ void CommSwitchProcess::partition_buffer(char* buf, int len, int client_socket_f
     }
 }
 
+/**
+ * We perform initialization by creating a socket, setting options, binding, and 
+ * finally listening on the socket connection. We also open our log file for writing. 
+ * This can be moved to a separate function in the future
+ */ 
 void CommSwitchProcess::init()
 {
 	int opt_val = 1;
@@ -179,8 +209,13 @@ void CommSwitchProcess::init()
 	
 	FD_ZERO(&allset);
 	FD_SET(sock_fd, &allset);
+
+	process_connections();
 }
 
+/**
+ * Receive the clients on the socket connection and process them
+ */  
 void CommSwitchProcess::process_connections()
 {
 	struct sigaction sigIntHandler;
@@ -269,6 +304,9 @@ void CommSwitchProcess::process_connections()
 	fclose(this->write_csp_log_file);
 }
 
+/** 
+ * We process client file descriptiors 
+ */  
 void CommSwitchProcess::process_other_file_descriptors()
 {
 	for (int i = 0; i <= max_i; i++) 
@@ -307,6 +345,9 @@ void CommSwitchProcess::process_other_file_descriptors()
 	}
 }
 
+/**
+ * We process the data queue
+ */ 
 void CommSwitchProcess::process_data_queue()
 {
 	for(int i = 0; i < QUEUE_SIZE; i++) 
@@ -355,6 +396,15 @@ void CommSwitchProcess::process_data_queue()
 	}
 }
 
+/** 
+ * If there is an empty position in our data queue we record the position 
+ * empty slot is indicated by -1 seq num
+ * Takes in 2 arguments as described below: 
+ * @arg an integer array of size 25, and 
+ * @arg int pointer j that we use to track position
+ * The caller will use j outside of this function, the value is updated since 
+ * we pass by reference and not value
+ */ 
 void CommSwitchProcess::record_empty_pos_in_data_q(int (&position)[QUEUE_SIZE], int* j)
 {
 	for(int i = 0; i < QUEUE_SIZE; i++)
@@ -365,6 +415,13 @@ void CommSwitchProcess::record_empty_pos_in_data_q(int (&position)[QUEUE_SIZE], 
 	}
 }
 
+/**
+ * Process the requests in our queue
+ * Takes in 2 arguments as described below: 
+ * @arg an integer array of size 25, and 
+ * @arg int pointer j that we use to track position
+ * It is updated upstream by @code record_empty_pos_in_data_q(int (&position)[QUEUE_SIZE], int* j);
+ */ 
 void CommSwitchProcess::process_request_queue(int (&position)[QUEUE_SIZE], int* j)
 {
 	int k = 0;
@@ -404,8 +461,12 @@ void CommSwitchProcess::process_request_queue(int (&position)[QUEUE_SIZE], int* 
 /**
  * Main driver of the CSP / Server
  * We keep it short and readable. 
- * Create an instance of CommSwitchProcess, initialize it, and process connections 
- * as they come
+ * Create an instance of CommSwitchProcess, initialize it
+ * That's it! Our initialized CSP object will take care of processing connections and 
+ * servicing requests. 
+ * Standard arguments: 
+ * @arg int argc to count how many arguments are provided by user on launch
+ * @arg char* argv[] array to hold the arguments passed via cmdline
  */ 
 int main(int argc, char* argv[])
 {
@@ -419,7 +480,6 @@ int main(int argc, char* argv[])
 
 	CommSwitchProcess* CSP = new CommSwitchProcess();
 	CSP->init();
-	CSP->process_connections();
     
-    return EXIT_SUCCESS;
+    return EXIT_SUCCESS; //0
 }
